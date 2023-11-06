@@ -29,7 +29,7 @@ model UserPreference {
   phone     String   @default("")
   avatarUrl String?
   address   String   @default("")
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @unique
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt

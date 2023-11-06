@@ -22,7 +22,7 @@ router.post(
     const { token } = req.body;
     const decoded = verifyJWT<{
       email: string | null;
-      name: string;
+      username: string;
       avatarUrl: string;
     }>(token, process.env.JWT_SECRET ?? "");
     if (!decoded || !decoded.email)
@@ -41,42 +41,70 @@ router.post(
     });
 
     if (!user) {
-      const { id, role, status, userPreference } = await prisma.user.create({
-        data: {
-          email: decoded.email,
-          userPreference: {
-            create: {
-              username: decoded.name,
-              avatarUrl: decoded.avatarUrl,
+      const { id, email, role, status, userPreference } =
+        await prisma.user.create({
+          data: {
+            email: decoded.email,
+            userPreference: {
+              create: {
+                username: decoded.username,
+                avatarUrl: decoded.avatarUrl,
+              },
             },
           },
-        },
-        include: {
-          userPreference: {
-            select: {
-              username: true,
-              avatarUrl: true,
+          include: {
+            userPreference: {
+              select: {
+                username: true,
+                avatarUrl: true,
+              },
             },
           },
+        });
+      const token = signJWT(
+        {
+          id,
+          email,
+          role,
+          status,
         },
-      });
+        process.env.JWT_SECRET ?? "",
+        {
+          expiresIn: 15 * 24 * 60 * 60,
+        }
+      );
       return res.send({
         id,
         email: decoded.email,
-        name: userPreference?.username!,
+        username: userPreference?.username!,
         avatarUrl: userPreference?.avatarUrl,
         role,
         status,
+        token,
       });
     }
+
+    const newtoken = signJWT(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+      },
+      process.env.JWT_SECRET ?? "",
+      {
+        expiresIn: 15 * 24 * 60 * 60,
+      }
+    );
 
     return res.send({
       id: user.id,
       email: decoded.email,
-      name: user.userPreference?.username!,
+      username: user.userPreference?.username!,
       avatarUrl: user.userPreference?.avatarUrl,
       role: user.role,
       status: user.status,
+      token: newtoken,
     });
   }
 );
@@ -130,7 +158,7 @@ router.post(
     return res.send({
       id,
       email,
-      name: userPreference?.username!,
+      username: userPreference?.username!,
       avatarUrl: userPreference?.avatarUrl,
       role,
       status,
