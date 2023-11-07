@@ -80,7 +80,7 @@ router.get("/:id", async (req: Request<QueryTagInput["params"]>, res) => {
       },
     },
   });
-  return res.send({ tag });
+  return res.send(tag);
 });
 
 router.get("/", async (req, res) => {
@@ -93,9 +93,7 @@ router.get("/", async (req, res) => {
       },
     },
   });
-  return res.send({
-    tags,
-  });
+  return res.send(tags);
 });
 
 router.post(
