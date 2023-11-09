@@ -7,41 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id             String          @id @default(uuid())
-  email          String          @unique
-  password       String?
-  role           Role            @default(SUBSCRIBER)
-  status         Status          @default(ACTIVE)
-  createAt       DateTime        @default(now())
-  updateAt       DateTime        @updatedAt
-  posts          Post[]
-  userPreference UserPreference?
+model Role {
+  id          String   @id @default(uuid())
+  roleName    String   @unique
+  canDelete   Boolean  @default(true)
+  permissions String[]
+  User        User[]
 
-  @@index([email])
+  @@index([roleName])
 }
 
-model UserPreference {
-  id        String   @id @default(uuid())
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String?
+  role     Role    @relation(fields: [roleId], references: [id])
+  roleId   String
+  isActive Boolean @default(true)
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
   username  String
-  bio       String   @default("")
-  links     String[]
-  phone     String   @default("")
+  bio       String?
+  phone     String?
   avatarUrl String?
-  address   String   @default("")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @unique
-  createAt  DateTime @default(now())
-  updateAt  DateTime @updatedAt
+  address   String?
+
+  posts Post[]
+
+  @@index([email, username, phone])
 }
 
 model Tag {
-  id   String @id @default(uuid())
-  name String
-  slug String @unique
-  post Post[]
+  id      String @id @default(uuid())
+  tagName String
+  slug    String @unique
+  post    Post[]
 
-  @@index([name, slug])
+  @@index([tagName, slug])
 }
 
 model Post {
@@ -70,17 +74,6 @@ model Otp {
 
   @@unique([code, email])
   @@index([code, email])
-}
-
-enum Role {
-  ADMIN
-  POSTER
-  SUBSCRIBER
-}
-
-enum Status {
-  ACTIVE
-  BLOCK
 }
 
 enum OtpType {

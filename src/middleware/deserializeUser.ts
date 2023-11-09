@@ -1,20 +1,7 @@
 import { RequestHandler as Middleware } from "express";
 import { verifyJWT } from "../utils/jwt";
 import prisma from "../utils/db";
-type UserAuth = {
-  id: string;
-  email: string;
-  role: "ADMIN" | "POSTER" | "SUBSCRIBER";
-  status: string;
-};
-
-declare global {
-  namespace Express {
-    interface Locals {
-      currentUser?: UserAuth;
-    }
-  }
-}
+import { UserAuth } from "../../common.types";
 
 export const deserializeUser: Middleware = async (req, res, next) => {
   const accessToken = (
@@ -29,14 +16,14 @@ export const deserializeUser: Middleware = async (req, res, next) => {
   );
   if (decoded) {
     const user = await prisma.user.findFirst({
-      where: { id: decoded.id, status: "ACTIVE" },
+      where: { id: decoded.id, isActive: true },
     });
     if (user) {
       res.locals.currentUser = {
         id: user.id,
         email: user.email,
-        role: user.role,
-        status: user.status,
+        roleId: "",
+        isActive: user.isActive,
       };
     }
   }

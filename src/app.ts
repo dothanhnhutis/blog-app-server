@@ -6,6 +6,16 @@ import router from "./router";
 import { NotFoundError } from "./errors/not-found-error";
 import { CustomError } from "./errors/custom-error";
 import { deserializeUser } from "./middleware/deserializeUser";
+import { UserAuth } from "../common.types";
+
+declare global {
+  namespace Express {
+    interface Locals {
+      currentUser?: UserAuth;
+    }
+  }
+}
+
 const app: Express = express();
 
 app.use(morgan("dev"));

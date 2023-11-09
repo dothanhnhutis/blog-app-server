@@ -7,10 +7,9 @@ import post from "./post";
 
 const router = Router();
 
-router.use("/users", user);
+// router.use("/users", user);
 router.use("/auth", auth);
-router.use("/otp", otp);
-router.use("/tags", tag);
-router.use("/posts", post);
-
+// router.use("/otp", otp);
+// router.use("/tags", tag);
+// router.use("/posts", post);
 export default router;

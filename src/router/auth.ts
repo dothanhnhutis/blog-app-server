@@ -31,36 +31,31 @@ router.post(
     const user = await prisma.user.findUnique({
       where: { email: decoded.email },
       include: {
-        userPreference: {
-          select: {
-            username: true,
-            avatarUrl: true,
-          },
-        },
+        role: true,
       },
     });
 
     if (!user) {
-      const { id, email, role, status, userPreference } =
-        await prisma.user.create({
-          data: {
-            email: decoded.email,
-            userPreference: {
+      const newUser = await prisma.user.create({
+        data: {
+          email: decoded.email,
+          username: decoded.email,
+
+          role: {
+            connectOrCreate: {
               create: {
-                username: decoded.username,
-                avatarUrl: decoded.avatarUrl,
+                roleName: "Subscriber",
+              },
+              where: {
+                roleName: "Subscriber",
               },
             },
           },
-          include: {
-            userPreference: {
-              select: {
-                username: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        });
+        },
+        include: {
+          role: true,
+        },
+      });
       const token = signJWT(
         {
           id,
@@ -130,23 +125,24 @@ router.post(
     if (!otp) throw new BadRequestError("Email verification code has expired");
 
     const hash = hashPassword(password);
-    const { id, role, status, userPreference } = await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         email: email,
         password: hash,
-        userPreference: {
-          create: {
-            username: email.split("@")[0] ?? email,
+        username: email.split("@")[0] ?? email,
+        role: {
+          connectOrCreate: {
+            create: {
+              roleName: "Subscriber",
+            },
+            where: {
+              roleName: "Subscriber",
+            },
           },
         },
       },
       include: {
-        userPreference: {
-          select: {
-            username: true,
-            avatarUrl: true,
-          },
-        },
+        role: true,
       },
     });
     await prisma.otp.update({
@@ -155,14 +151,7 @@ router.post(
         verified: true,
       },
     });
-    return res.send({
-      id,
-      email,
-      username: userPreference?.username!,
-      avatarUrl: userPreference?.avatarUrl,
-      role,
-      status,
-    });
+    return res.send(newUser);
   }
 );
 
@@ -174,12 +163,7 @@ router.post(
     const user = await prisma.user.findUnique({
       where: { email: email },
       include: {
-        userPreference: {
-          select: {
-            username: true,
-            avatarUrl: true,
-          },
-        },
+        role: true,
       },
     });
     if (
@@ -192,24 +176,25 @@ router.post(
           id: user.id,
           email: user.email,
           role: user.role,
-          status: user.status,
+          isActive: user.isActive,
         },
         process.env.JWT_SECRET ?? "",
         {
           expiresIn: 15 * 24 * 60 * 60,
         }
       );
-      if (user.status === "BLOCK")
+      if (!user.isActive)
         throw new BadRequestError(
           "Your account has been locked please contact the administrator"
         );
+
       return res.send({
         id: user.id,
         email: user.email,
         role: user.role,
-        status: user.status,
-        username: user.userPreference?.username,
-        avatarUrl: user.userPreference?.avatarUrl,
+        isActive: user.isActive,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
         token,
       });
     }

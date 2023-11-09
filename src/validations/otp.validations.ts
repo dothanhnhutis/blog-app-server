@@ -1,5 +1,5 @@
 import { z } from "zod";
-
+import { otpTypes } from "../constants";
 export const sendOtpValidation = z.object({
   body: z
     .object({
@@ -9,7 +9,7 @@ export const sendOtpValidation = z.object({
           invalid_type_error: "email field must be string",
         })
         .email("Invalid email"),
-      type: z.enum(["SIGNINUP", "RESETPASSWORD"] as const),
+      type: z.enum(otpTypes),
     })
     .strict(),
 });
