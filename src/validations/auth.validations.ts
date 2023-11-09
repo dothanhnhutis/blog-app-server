@@ -55,8 +55,6 @@ export const signupValidation = z.object({
     })
     .strict(),
 });
-export type SignupProviderInput = z.infer<
-  typeof signinProviderValidation
->["body"];
-export type SignupInput = z.infer<typeof signupValidation>["body"];
-export type SigninInput = z.infer<typeof signinValidation>["body"];
+export type SignupProviderInput = z.infer<typeof signinProviderValidation>;
+export type SignupInput = z.infer<typeof signupValidation>;
+export type SigninInput = z.infer<typeof signinValidation>;

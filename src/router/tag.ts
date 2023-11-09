@@ -4,7 +4,7 @@ import { validateResource } from "../middleware/validateResource";
 import {
   CreateTagInput,
   EditTagInput,
-  QueryTagInput,
+  GetTagInput,
   createTagValidation,
   editTagValidation,
 } from "../validations/tag.validations";
@@ -17,30 +17,24 @@ const router = Router();
 router.delete(
   "/:id",
   requiredAuth,
-  roleAccess(["ADMIN", "POSTER"]),
+  roleAccess("TAG_DELETE"),
   async (req: Request<EditTagInput["params"]>, res) => {
     const { id } = req.params;
-
     const tag = await prisma.tag.findUnique({
       where: { id },
     });
-
     if (!tag) throw new BadRequestError("slug not exist");
-
     const deleteTag = await prisma.tag.delete({
       where: { id },
     });
-
-    return res.send({
-      tag: deleteTag,
-    });
+    return res.send(deleteTag);
   }
 );
 
 router.patch(
   "/:id",
   requiredAuth,
-  roleAccess(["ADMIN", "POSTER"]),
+  roleAccess("TAG_EDIT"),
   validateResource(editTagValidation),
   async (
     req: Request<EditTagInput["params"], {}, EditTagInput["body"]>,
@@ -63,13 +57,11 @@ router.patch(
       data: { ...req.body },
     });
 
-    return res.send({
-      tag: newTag,
-    });
+    return res.send(newTag);
   }
 );
 
-router.get("/:id", async (req: Request<QueryTagInput["params"]>, res) => {
+router.get("/:id", async (req: Request<GetTagInput["params"]>, res) => {
   const tag = await prisma.tag.findUnique({
     where: { id: req.params.id },
     include: {
@@ -99,20 +91,18 @@ router.get("/", async (req, res) => {
 router.post(
   "/",
   requiredAuth,
-  roleAccess(["ADMIN", "POSTER"]),
+  roleAccess("TAG_CREATE"),
   validateResource(createTagValidation),
-  async (req: Request<{}, {}, CreateTagInput>, res) => {
-    const { name, slug } = req.body;
+  async (req: Request<{}, {}, CreateTagInput["body"]>, res) => {
+    const { tagName, slug } = req.body;
 
     const tag = await prisma.tag.findUnique({
       where: { slug: slug },
     });
     if (tag) throw new BadRequestError("slug has been used");
-    const newTag = await prisma.tag.create({ data: { name, slug } });
+    const newTag = await prisma.tag.create({ data: { tagName, slug } });
 
-    return res.send({
-      tag: newTag,
-    });
+    return res.send(newTag);
   }
 );
 

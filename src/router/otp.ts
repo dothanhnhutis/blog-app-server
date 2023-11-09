@@ -15,12 +15,13 @@ const router = Router();
 router.post(
   "/send",
   validateResource(sendOtpValidation),
-  async (req: Request<{}, {}, SendOtpInput>, res) => {
+  async (req: Request<{}, {}, SendOtpInput["body"]>, res) => {
     const { email, type } = req.body;
     const user = await prisma.user.findUnique({
       where: { email: email },
     });
-    if (user) throw new BadRequestError("Uer already exists");
+    if (user && type === "SIGNINUP")
+      throw new BadRequestError("Uer already exists");
     const otp = await prisma.otp.findFirst({
       where: {
         verified: false,

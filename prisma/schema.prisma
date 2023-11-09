@@ -8,10 +8,10 @@ datasource db {
 }
 
 model Role {
-  id          String   @id @default(uuid())
-  roleName    String   @unique
-  canDelete   Boolean  @default(true)
-  permissions String[]
+  id          String       @id @default(uuid())
+  roleName    String       @unique
+  isLock      Boolean      @default(false)
+  permissions Permission[]
   User        User[]
 
   @@index([roleName])
@@ -79,4 +79,23 @@ model Otp {
 enum OtpType {
   SIGNINUP
   RESETPASSWORD
+}
+
+enum Permission {
+  USER_VIEW
+  USER_CREATE
+  USER_EDIT
+  USER_DELETE
+  ROLE_VIEW
+  ROLE_CREATE
+  ROLE_EDIT
+  ROLE_DELETE
+  TAG_VIEW
+  TAG_CREATE
+  TAG_EDIT
+  TAG_DELETE
+  POST_VIEW
+  POST_CREATE
+  POST_EDIT
+  POST_DELETE
 }

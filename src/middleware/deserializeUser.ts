@@ -18,13 +18,9 @@ export const deserializeUser: Middleware = async (req, res, next) => {
     const user = await prisma.user.findFirst({
       where: { id: decoded.id, isActive: true },
     });
+
     if (user) {
-      res.locals.currentUser = {
-        id: user.id,
-        email: user.email,
-        roleId: "",
-        isActive: user.isActive,
-      };
+      res.locals.currentUser = decoded;
     }
   }
 

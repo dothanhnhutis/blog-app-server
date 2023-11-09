@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { otpTypes } from "../constants";
+const otpTypeEnum = ["SIGNINUP", "RESETPASSWORD"] as const;
 export const sendOtpValidation = z.object({
   body: z
     .object({
@@ -9,9 +9,9 @@ export const sendOtpValidation = z.object({
           invalid_type_error: "email field must be string",
         })
         .email("Invalid email"),
-      type: z.enum(otpTypes),
+      type: z.enum(otpTypeEnum),
     })
     .strict(),
 });
 
-export type SendOtpInput = z.infer<typeof sendOtpValidation>["body"];
+export type SendOtpInput = z.infer<typeof sendOtpValidation>;

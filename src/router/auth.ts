@@ -15,10 +15,12 @@ import { signJWT, verifyJWT } from "../utils/jwt";
 
 const router = Router();
 
+const EXPIRES = 15 * 24 * 60 * 60;
+
 router.post(
   "/signin/provider",
   validateResource(signinProviderValidation),
-  async (req: Request<{}, {}, SignupProviderInput>, res) => {
+  async (req: Request<{}, {}, SignupProviderInput["body"]>, res) => {
     const { token } = req.body;
     const decoded = verifyJWT<{
       email: string | null;
@@ -40,7 +42,6 @@ router.post(
         data: {
           email: decoded.email,
           username: decoded.email,
-
           role: {
             connectOrCreate: {
               create: {
@@ -56,49 +57,37 @@ router.post(
           role: true,
         },
       });
-      const token = signJWT(
-        {
-          id,
-          email,
-          role,
-          status,
-        },
-        process.env.JWT_SECRET ?? "",
-        {
-          expiresIn: 15 * 24 * 60 * 60,
-        }
-      );
+      const data = {
+        id: newUser.id,
+        email: newUser.email,
+        username: newUser.username,
+        avatarUrl: newUser.avatarUrl,
+        role: newUser.role,
+        isActive: newUser.isActive,
+      };
+      const token = signJWT(data, process.env.JWT_SECRET ?? "", {
+        expiresIn: EXPIRES,
+      });
       return res.send({
-        id,
-        email: decoded.email,
-        username: userPreference?.username!,
-        avatarUrl: userPreference?.avatarUrl,
-        role,
-        status,
+        ...data,
         token,
       });
     }
 
-    const newtoken = signJWT(
-      {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-      },
-      process.env.JWT_SECRET ?? "",
-      {
-        expiresIn: 15 * 24 * 60 * 60,
-      }
-    );
+    const data = {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      role: user.role,
+      isActive: user.isActive,
+    };
+    const newtoken = signJWT(data, process.env.JWT_SECRET ?? "", {
+      expiresIn: 15 * 24 * 60 * 60,
+    });
 
     return res.send({
-      id: user.id,
-      email: decoded.email,
-      username: user.userPreference?.username!,
-      avatarUrl: user.userPreference?.avatarUrl,
-      role: user.role,
-      status: user.status,
+      ...data,
       token: newtoken,
     });
   }
@@ -107,7 +96,7 @@ router.post(
 router.post(
   "/signup",
   validateResource(signupValidation),
-  async (req: Request<{}, {}, SignupInput>, res) => {
+  async (req: Request<{}, {}, SignupInput["body"]>, res) => {
     const { email, password, code } = req.body;
     const user = await prisma.user.findUnique({
       where: { email },
@@ -158,7 +147,7 @@ router.post(
 router.post(
   "/signin",
   validateResource(signinValidation),
-  async (req: Request<{}, {}, SigninInput>, res) => {
+  async (req: Request<{}, {}, SigninInput["body"]>, res) => {
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({
       where: { email: email },
@@ -171,30 +160,24 @@ router.post(
       user.password &&
       (await comparePassword(user.password, password))
     ) {
-      const token = signJWT(
-        {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          isActive: user.isActive,
-        },
-        process.env.JWT_SECRET ?? "",
-        {
-          expiresIn: 15 * 24 * 60 * 60,
-        }
-      );
+      const data = {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        isActive: user.isActive,
+      };
+      const token = signJWT(data, process.env.JWT_SECRET ?? "", {
+        expiresIn: EXPIRES,
+      });
       if (!user.isActive)
         throw new BadRequestError(
           "Your account has been locked please contact the administrator"
         );
 
       return res.send({
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        isActive: user.isActive,
-        username: user.username,
-        avatarUrl: user.avatarUrl,
+        ...data,
         token,
       });
     }
