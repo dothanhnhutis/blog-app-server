@@ -49,11 +49,13 @@ model Order {
 
 // Role
 // Admin All
-// Manager post tag order stock product 
+// Manager user post tag order stock product chemical
 // Accountance stock order product
 // Researcher order product write-chemical
 // Paperworker read-chemical product
 // Writer post tag
+
+// Admin Writer 
 
 enum Role {
   Admin
