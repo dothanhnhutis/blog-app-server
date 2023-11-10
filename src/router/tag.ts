@@ -17,7 +17,7 @@ const router = Router();
 router.delete(
   "/:id",
   requiredAuth,
-  roleAccess("TAG_DELETE"),
+  roleAccess(["Admin", "Manager", "Writer"]),
   async (req: Request<EditTagInput["params"]>, res) => {
     const { id } = req.params;
     const tag = await prisma.tag.findUnique({
@@ -34,7 +34,7 @@ router.delete(
 router.patch(
   "/:id",
   requiredAuth,
-  roleAccess("TAG_EDIT"),
+  roleAccess(["Admin", "Manager", "Writer"]),
   validateResource(editTagValidation),
   async (
     req: Request<EditTagInput["params"], {}, EditTagInput["body"]>,
@@ -91,7 +91,7 @@ router.get("/", async (req, res) => {
 router.post(
   "/",
   requiredAuth,
-  roleAccess("TAG_CREATE"),
+  roleAccess(["Admin", "Manager", "Writer"]),
   validateResource(createTagValidation),
   async (req: Request<{}, {}, CreateTagInput["body"]>, res) => {
     const { tagName, slug } = req.body;

@@ -1,14 +1,16 @@
-import { Router, Request } from "express";
-
 import prisma from "../utils/db";
+import { Router, Request } from "express";
 import { generateOTPCode } from "../utils";
 import { sendMail } from "../utils/nodemailer";
 import { BadRequestError } from "../errors/bad-request-error";
 import { validateResource } from "../middleware/validateResource";
 import {
+  OTPType,
   SendOtpInput,
   sendOtpValidation,
 } from "../validations/otp.validations";
+import { verifyJWT } from "../utils/jwt";
+import { NotFoundError } from "../errors/not-found-error";
 
 const router = Router();
 
@@ -16,18 +18,24 @@ router.post(
   "/send",
   validateResource(sendOtpValidation),
   async (req: Request<{}, {}, SendOtpInput["body"]>, res) => {
-    const { email, type } = req.body;
+    const { token } = req.body;
+    const decoded = verifyJWT<{
+      email: string;
+      type: OTPType;
+    }>(token, process.env.JWT_SECRET ?? "");
+
+    if (!decoded) throw new NotFoundError();
     const user = await prisma.user.findUnique({
-      where: { email: email },
+      where: { email: decoded.email },
     });
-    if (user && type === "SIGNINUP")
+    if (user && decoded.type === "SIGNINUP")
       throw new BadRequestError("Uer already exists");
     const otp = await prisma.otp.findFirst({
       where: {
         verified: false,
         expireAt: { gte: new Date(Date.now()) },
-        email,
-        type,
+        email: decoded.email,
+        type: decoded.type,
       },
     });
     const code = otp?.code ?? generateOTPCode();
@@ -36,14 +44,14 @@ router.post(
         data: {
           code,
           expireAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-          email,
-          type,
+          email: decoded.email,
+          type: decoded.type,
         },
       });
     }
     const data = {
       from: 'I.C.H Verify Email" <gaconght@gmail.com>',
-      to: email,
+      to: decoded.email,
       subject: "I.C.H Verify Email",
       html: `<b>code: ${code}</b>`,
     };

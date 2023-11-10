@@ -1,11 +1,9 @@
 import { z } from "zod";
-
 const paramsTag = z
   .object({
     id: z.string(),
   })
   .strict();
-
 const bodyTag = z
   .object({
     tagName: z
@@ -22,24 +20,19 @@ const bodyTag = z
       .min(1, "slug field must be at least 1 character"),
   })
   .strict();
-
 export const getTagValidation = z.object({
   params: paramsTag,
 });
-
 export const createTagValidation = z.object({
   body: bodyTag,
 });
-
 export const editTagValidation = z.object({
   params: z.object({
     id: z.string(),
   }),
   body: bodyTag.partial(),
 });
-
 export const deleteTagValidation = getTagValidation;
-
 export type GetTagInput = z.infer<typeof getTagValidation>;
 export type CreateTagInput = z.infer<typeof createTagValidation>;
 export type EditTagInput = z.infer<typeof editTagValidation>;

@@ -20,7 +20,7 @@ export const deserializeUser: Middleware = async (req, res, next) => {
     });
 
     if (user) {
-      res.locals.currentUser = decoded;
+      res.locals.currentUser = user;
     }
   }
 

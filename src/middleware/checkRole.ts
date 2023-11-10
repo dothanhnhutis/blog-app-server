@@ -1,14 +1,11 @@
 import { RequestHandler as Middleware, Request } from "express";
 import { PermissionError } from "../errors/permission-error";
-import { Permission } from "../validations/role.validations";
+import { Role } from "../validations/user.validations";
 
 export const roleAccess =
-  (role: Permission): Middleware =>
+  (role: Role[]): Middleware =>
   (req, res, next) => {
-    if (
-      res.locals.currentUser &&
-      res.locals.currentUser.role.permissions.includes(role)
-    ) {
+    if (res.locals.currentUser && role.includes(res.locals.currentUser.role)) {
       next();
     } else {
       throw new PermissionError();

@@ -1,4 +1,4 @@
-import { Permissions } from "./src/validations/role.validations";
+import { Role } from "./src/validations/user.validations";
 
 export type UserAuth = {
   id: string;
@@ -6,10 +6,5 @@ export type UserAuth = {
   username: string;
   avatarUrl: string | null;
   isActive: boolean;
-  role: {
-    id: string;
-    roleName: string;
-    canDelete: boolean;
-    permissions: Permissions;
-  };
+  role: Role;
 };

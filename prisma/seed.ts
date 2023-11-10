@@ -1,29 +1,38 @@
 import { hashPassword } from "../src/utils";
 import prisma from "../src/utils/db";
-import { permissionEnum } from "../src/validations/role.validations";
 
 async function seed() {
   await prisma.user.deleteMany();
-  await prisma.role.deleteMany();
-  await prisma.role.create({
-    data: {
-      isLock: true,
-      roleName: "Subscriber",
-      permissions: [],
-    },
-  });
-
   const hash = hashPassword("@Abc123123");
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email: "gaconght001@gmail.com",
       password: hash,
       username: "Admin",
-      role: {
+      role: "Admin",
+    },
+  });
+
+  const expectDeliveryAt = new Date(Date.now() + 24 * 60 * 60 * 5);
+  await prisma.order.create({
+    data: {
+      name: "hoa chat",
+      type: "CHEMICALS",
+      status: "CREATE",
+      unit: "GRAMS",
+      amount: 1000,
+      expectDeliveryAt,
+      log: {
         create: {
-          isLock: true,
-          roleName: "Admin",
-          permissions: [...permissionEnum],
+          data: {
+            name: "hoa chat",
+            type: "CHEMICALS",
+            status: "CREATE",
+            unit: "GRAMS",
+            amount: 1000,
+            expectDeliveryAt,
+          },
+          userId: user.id,
         },
       },
     },

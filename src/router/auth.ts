@@ -23,71 +23,34 @@ router.post(
   async (req: Request<{}, {}, SignupProviderInput["body"]>, res) => {
     const { token } = req.body;
     const decoded = verifyJWT<{
-      email: string | null;
+      email: string;
       username: string;
       avatarUrl: string;
     }>(token, process.env.JWT_SECRET ?? "");
-    if (!decoded || !decoded.email)
-      throw new BadRequestError("Uer already exists");
+    if (!decoded) throw new BadRequestError("Uer already exists");
 
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.upsert({
       where: { email: decoded.email },
-      include: {
-        role: true,
+      update: {},
+      create: {
+        email: decoded.email,
+        username: decoded.username,
+        avatarUrl: decoded.avatarUrl,
+        role: "Writer",
       },
     });
 
-    if (!user) {
-      const newUser = await prisma.user.create({
-        data: {
-          email: decoded.email,
-          username: decoded.email,
-          role: {
-            connectOrCreate: {
-              create: {
-                roleName: "Subscriber",
-              },
-              where: {
-                roleName: "Subscriber",
-              },
-            },
-          },
-        },
-        include: {
-          role: true,
-        },
-      });
-      const data = {
-        id: newUser.id,
-        email: newUser.email,
-        username: newUser.username,
-        avatarUrl: newUser.avatarUrl,
-        role: newUser.role,
-        isActive: newUser.isActive,
-      };
-      const token = signJWT(data, process.env.JWT_SECRET ?? "", {
-        expiresIn: EXPIRES,
-      });
-      return res.send({
-        ...data,
-        token,
-      });
-    }
+    const newtoken = signJWT({ id: user.id }, process.env.JWT_SECRET ?? "", {
+      expiresIn: 15 * 24 * 60 * 60,
+    });
 
-    const data = {
+    return res.send({
       id: user.id,
       email: user.email,
       username: user.username,
       avatarUrl: user.avatarUrl,
       role: user.role,
       isActive: user.isActive,
-    };
-    const newtoken = signJWT(data, process.env.JWT_SECRET ?? "", {
-      expiresIn: 15 * 24 * 60 * 60,
-    });
-
-    return res.send({
-      ...data,
       token: newtoken,
     });
   }
@@ -119,19 +82,6 @@ router.post(
         email: email,
         password: hash,
         username: email.split("@")[0] ?? email,
-        role: {
-          connectOrCreate: {
-            create: {
-              roleName: "Subscriber",
-            },
-            where: {
-              roleName: "Subscriber",
-            },
-          },
-        },
-      },
-      include: {
-        role: true,
       },
     });
     await prisma.otp.update({
@@ -151,37 +101,27 @@ router.post(
     const { email, password } = req.body;
     const user = await prisma.user.findUnique({
       where: { email: email },
-      include: {
-        role: true,
-      },
     });
-    if (
-      user &&
-      user.password &&
-      (await comparePassword(user.password, password))
-    ) {
-      const data = {
+    if (!user) throw new BadRequestError("invalid email or password");
+    if (!user.isActive)
+      throw new BadRequestError(
+        "Your account has been locked please contact the administrator"
+      );
+    if (user.password && (await comparePassword(user.password, password))) {
+      const token = signJWT({ id: user.id }, process.env.JWT_SECRET ?? "", {
+        expiresIn: EXPIRES,
+      });
+
+      return res.send({
         id: user.id,
         email: user.email,
         username: user.username,
         avatarUrl: user.avatarUrl,
         role: user.role,
         isActive: user.isActive,
-      };
-      const token = signJWT(data, process.env.JWT_SECRET ?? "", {
-        expiresIn: EXPIRES,
-      });
-      if (!user.isActive)
-        throw new BadRequestError(
-          "Your account has been locked please contact the administrator"
-        );
-
-      return res.send({
-        ...data,
         token,
       });
     }
-    throw new BadRequestError("invalid email or password");
   }
 );
 

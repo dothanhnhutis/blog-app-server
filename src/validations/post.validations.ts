@@ -51,6 +51,7 @@ export const createPostValidation = z.object({
   body: postBody.strict(),
 });
 export const editPostValidation = z.object({
+  params: postParams.strict(),
   body: postBody.partial().strict(),
 });
 

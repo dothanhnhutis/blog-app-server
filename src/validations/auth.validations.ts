@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 export const signinProviderValidation = z.object({
   body: z
     .object({
@@ -10,7 +9,6 @@ export const signinProviderValidation = z.object({
     })
     .strict(),
 });
-
 export const signinValidation = z.object({
   body: z
     .object({
@@ -25,7 +23,6 @@ export const signinValidation = z.object({
     })
     .strict(),
 });
-
 export const signupValidation = z.object({
   body: z
     .object({

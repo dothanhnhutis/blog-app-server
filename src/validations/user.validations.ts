@@ -1,4 +1,14 @@
 import { z } from "zod";
+export const roleEnum = [
+  "Admin",
+  "Manager",
+  "Accountance",
+  "Researcher",
+  "Paperworker",
+  "Writer",
+] as const;
+const roleZod = z.enum(roleEnum);
+export type Role = z.infer<typeof roleZod>;
 
 const userParams = z.object({
   id: z.string(),
@@ -22,10 +32,7 @@ const userBody = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]*$/,
       "password field must include: letters, numbers and special characters"
     ),
-  roleId: z.string({
-    required_error: "roleId field is required",
-    invalid_type_error: "roleId field must be string",
-  }),
+  role: roleZod,
   isActive: z.boolean({
     required_error: "isActive field is required",
     invalid_type_error: "isActive field must be boolean",
@@ -74,7 +81,6 @@ export const getUserValidation = z.object({
 });
 
 export const deleteUserValidation = getUserValidation;
-
 export type EditUserInput = z.infer<typeof editUserValidation>;
 export type CreateUserInput = z.infer<typeof createUserValidation>;
 export type GetUserInput = z.infer<typeof getUserValidation>;

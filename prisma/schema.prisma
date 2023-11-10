@@ -7,43 +7,89 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Role {
-  id          String       @id @default(uuid())
-  roleName    String       @unique
-  isLock      Boolean      @default(false)
-  permissions Permission[]
-  User        User[]
+model LogOrder {
+  id       String   @id @default(uuid())
+  data     Json
+  orderId  String
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  createAt DateTime @default(now())
+}
 
-  @@index([roleName])
+enum TypeBooking {
+  PACKAGING
+  CHEMICALS
+}
+
+enum UnitBooking {
+  GRAMS
+  MILLILITER
+  BARRELS
+}
+
+enum StatusEnum {
+  CREATE
+  SHIPPING
+  RECEIVED
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  name             String
+  type             TypeBooking
+  unit             UnitBooking
+  amount           BigInt
+  status           StatusEnum
+  log              LogOrder[]
+  expectDeliveryAt DateTime
+  createAt         DateTime    @default(now())
+  updateAt         DateTime    @updatedAt
+}
+
+// Role
+// Admin All
+// Manager post tag order stock product 
+// Accountance stock order product
+// Researcher order product write-chemical
+// Paperworker read-chemical product
+// Writer post tag
+
+enum Role {
+  Admin
+  Manager
+  Accountance
+  Researcher
+  Paperworker
+  Writer
 }
 
 model User {
-  id       String  @id @default(uuid())
-  email    String  @unique
-  password String?
-  role     Role    @relation(fields: [roleId], references: [id])
-  roleId   String
-  isActive Boolean @default(true)
-
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
-
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String?
+  role      Role       @default(Writer)
+  isActive  Boolean    @default(false)
   username  String
   bio       String?
   phone     String?
   avatarUrl String?
   address   String?
-
-  posts Post[]
+  posts     Post[]
+  logOrder  LogOrder[]
+  createAt  DateTime   @default(now())
+  updateAt  DateTime   @updatedAt
 
   @@index([email, username, phone])
 }
 
 model Tag {
-  id      String @id @default(uuid())
-  tagName String
-  slug    String @unique
-  post    Post[]
+  id       String   @id @default(uuid())
+  tagName  String
+  slug     String   @unique
+  post     Post[]
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
 
   @@index([tagName, slug])
 }
@@ -64,6 +110,11 @@ model Post {
   @@index([title, slug, tagId, authorId])
 }
 
+enum OtpType {
+  SIGNINUP
+  RESETPASSWORD
+}
+
 model Otp {
   id       String   @id @default(uuid())
   code     String
@@ -74,28 +125,4 @@ model Otp {
 
   @@unique([code, email])
   @@index([code, email])
-}
-
-enum OtpType {
-  SIGNINUP
-  RESETPASSWORD
-}
-
-enum Permission {
-  USER_VIEW
-  USER_CREATE
-  USER_EDIT
-  USER_DELETE
-  ROLE_VIEW
-  ROLE_CREATE
-  ROLE_EDIT
-  ROLE_DELETE
-  TAG_VIEW
-  TAG_CREATE
-  TAG_EDIT
-  TAG_DELETE
-  POST_VIEW
-  POST_CREATE
-  POST_EDIT
-  POST_DELETE
 }
