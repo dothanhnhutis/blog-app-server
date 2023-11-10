@@ -23,7 +23,6 @@ router.post(
       email: string;
       type: OTPType;
     }>(token, process.env.JWT_SECRET ?? "");
-
     if (!decoded) throw new NotFoundError();
     const user = await prisma.user.findUnique({
       where: { email: decoded.email },

@@ -107,21 +107,23 @@ router.post(
       throw new BadRequestError(
         "Your account has been locked please contact the administrator"
       );
-    if (user.password && (await comparePassword(user.password, password))) {
-      const token = signJWT({ id: user.id }, process.env.JWT_SECRET ?? "", {
-        expiresIn: EXPIRES,
-      });
 
-      return res.send({
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        avatarUrl: user.avatarUrl,
-        role: user.role,
-        isActive: user.isActive,
-        token,
-      });
-    }
+    if (!user.password || !(await comparePassword(user.password, password)))
+      throw new BadRequestError("invalid email or password");
+
+    const token = signJWT({ id: user.id }, process.env.JWT_SECRET!, {
+      expiresIn: EXPIRES,
+    });
+
+    return res.send({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      role: user.role,
+      isActive: user.isActive,
+      token,
+    });
   }
 );
 

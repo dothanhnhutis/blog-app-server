@@ -72,6 +72,7 @@ router.get("/:id", async (req: Request<GetTagInput["params"]>, res) => {
       },
     },
   });
+  console.log(tag);
   return res.send(tag);
 });
 

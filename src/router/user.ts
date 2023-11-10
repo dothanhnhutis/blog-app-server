@@ -57,7 +57,7 @@ router.get(
     const { id } = req.params;
     const roleAccess: Role[] = ["Admin", "Manager"];
     if (
-      id !== res.locals.currentUser?.id ||
+      id !== res.locals.currentUser?.id &&
       !roleAccess.includes(res.locals.currentUser?.role!)
     )
       throw new PermissionError();
