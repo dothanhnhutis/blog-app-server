@@ -49,10 +49,12 @@ const userBody = z.object({
     required_error: "phone field is required",
     invalid_type_error: "phone field must be string",
   }),
-  avatarUrl: z.string({
-    required_error: "avatarUrl field is required",
-    invalid_type_error: "avatarUrl field must be string",
-  }),
+  avatarUrl: z
+    .string({
+      required_error: "avatarUrl field is required",
+      invalid_type_error: "avatarUrl field must be string",
+    })
+    .nullable(),
   address: z.string({
     required_error: "address field is required",
     invalid_type_error: "address field must be string",

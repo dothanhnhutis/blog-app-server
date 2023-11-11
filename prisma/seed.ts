@@ -10,6 +10,7 @@ async function seed() {
       password: hash,
       username: "Admin",
       role: "Admin",
+      isActive: true,
     },
   });
 

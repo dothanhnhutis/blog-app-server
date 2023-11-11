@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// LogOrder Model
 model LogOrder {
   id       String   @id @default(uuid())
   data     Json
@@ -55,8 +56,7 @@ model Order {
 // Paperworker read-chemical product
 // Writer post tag
 
-// Admin Writer 
-
+// Role Model
 enum Role {
   Admin
   Manager
@@ -66,6 +66,7 @@ enum Role {
   Writer
 }
 
+// User Model
 model User {
   id        String     @id @default(uuid())
   email     String     @unique
@@ -73,10 +74,10 @@ model User {
   role      Role       @default(Writer)
   isActive  Boolean    @default(false)
   username  String
-  bio       String?
-  phone     String?
+  bio       String     @default("")
+  phone     String     @default("")
   avatarUrl String?
-  address   String?
+  address   String     @default("")
   posts     Post[]
   logOrder  LogOrder[]
   createAt  DateTime   @default(now())
@@ -85,6 +86,7 @@ model User {
   @@index([email, username, phone])
 }
 
+// Tag Model
 model Tag {
   id       String   @id @default(uuid())
   tagName  String
@@ -96,6 +98,7 @@ model Tag {
   @@index([tagName, slug])
 }
 
+// Post Model
 model Post {
   id       String   @id @default(uuid())
   title    String
@@ -112,6 +115,7 @@ model Post {
   @@index([title, slug, tagId, authorId])
 }
 
+// OTP Model
 enum OtpType {
   SIGNINUP
   RESETPASSWORD

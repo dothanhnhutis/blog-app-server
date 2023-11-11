@@ -7,6 +7,7 @@ export const deserializeUser: Middleware = async (req, res, next) => {
   const accessToken = (
     req.headers.authorization ||
     req.header("Authorization") ||
+    req.header("x-token") ||
     ""
   ).replace(/^Bearer\s/, "");
   if (!accessToken) return next();

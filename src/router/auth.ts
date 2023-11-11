@@ -15,7 +15,7 @@ import { signJWT, verifyJWT } from "../utils/jwt";
 
 const router = Router();
 
-const EXPIRES = 15 * 24 * 60 * 60;
+const EXPIRESTOKEN = 15 * 24 * 60 * 60;
 
 router.post(
   "/signin/provider",
@@ -40,8 +40,8 @@ router.post(
       },
     });
 
-    const newtoken = signJWT({ id: user.id }, process.env.JWT_SECRET ?? "", {
-      expiresIn: 15 * 24 * 60 * 60,
+    const newtoken = signJWT({ id: user.id }, process.env.JWT_SECRET!, {
+      expiresIn: EXPIRESTOKEN,
     });
 
     return res.send({
@@ -112,7 +112,7 @@ router.post(
       throw new BadRequestError("invalid email or password");
 
     const token = signJWT({ id: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: EXPIRES,
+      expiresIn: EXPIRESTOKEN,
     });
 
     return res.send({
