@@ -13,7 +13,7 @@ model LogOrder {
   data     Json
   orderId  String
   order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String
   createAt DateTime @default(now())
 }

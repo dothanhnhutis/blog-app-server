@@ -16,6 +16,9 @@ import { hashPassword } from "../utils";
 import { PermissionError } from "../errors/permission-error";
 
 const router = Router();
+router.get("/me", requiredAuth, async (req, res) => {
+  return res.send(res.locals.currentUser);
+});
 
 router.patch(
   "/:id",

@@ -5,9 +5,9 @@ import { UserAuth } from "../../common.types";
 
 export const deserializeUser: Middleware = async (req, res, next) => {
   const accessToken = (
+    req.header("x-token") ||
     req.headers.authorization ||
     req.header("Authorization") ||
-    req.header("x-token") ||
     ""
   ).replace(/^Bearer\s/, "");
   if (!accessToken) return next();
@@ -19,9 +19,15 @@ export const deserializeUser: Middleware = async (req, res, next) => {
     const user = await prisma.user.findFirst({
       where: { id: decoded.id, isActive: true },
     });
-
     if (user) {
-      res.locals.currentUser = user;
+      res.locals.currentUser = {
+        avatarUrl: user.avatarUrl,
+        email: user.email,
+        id: user.id,
+        isActive: user.isActive,
+        role: user.role,
+        username: user.username,
+      };
     }
   }
 
