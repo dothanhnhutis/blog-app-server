@@ -12,6 +12,7 @@ model LogOrder {
   id       String   @id @default(uuid())
   data     Json
   orderId  String
+  tags     String[]
   order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String
@@ -66,6 +67,18 @@ enum Role {
   Writer
 }
 
+model Image {
+  id        String   @id
+  public_id String
+  width     Int
+  height    Int
+  tags      String[]
+  url       String
+  uploadBy  User     @relation(fields: [userId], references: [id])
+  userId    String
+  createAt  DateTime @default(now())
+}
+
 // User Model
 model User {
   id        String     @id @default(uuid())
@@ -80,6 +93,7 @@ model User {
   address   String     @default("")
   posts     Post[]
   logOrder  LogOrder[]
+  images    Image[]
   createAt  DateTime   @default(now())
   updateAt  DateTime   @updatedAt
 

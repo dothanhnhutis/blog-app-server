@@ -14,3 +14,8 @@ export const comparePassword = (
 export const generateOTPCode = () => {
   return Math.floor(Math.random() * (999999 - 100000) + 100000).toString();
 };
+
+export function isBase64DataURL(value: string) {
+  const base64Regex = /^data:image\/[a-z]+;base64,/;
+  return base64Regex.test(value);
+}
