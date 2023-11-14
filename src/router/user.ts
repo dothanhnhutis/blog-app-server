@@ -29,7 +29,7 @@ router.patch(
     res
   ) => {
     const { id } = req.params;
-    const roleAccess: Role[] = ["Admin", "Manager"];
+    const roleAccess: Role[] = ["Admin"];
     if (
       id !== res.locals.currentUser?.id &&
       !roleAccess.includes(res.locals.currentUser?.role!)
@@ -58,7 +58,7 @@ router.get(
   requiredAuth,
   async (req: Request<GetUserInput["params"]>, res) => {
     const { id } = req.params;
-    const roleAccess: Role[] = ["Admin", "Manager"];
+    const roleAccess: Role[] = ["Admin"];
     if (
       id !== res.locals.currentUser?.id &&
       !roleAccess.includes(res.locals.currentUser?.role!)
@@ -80,7 +80,7 @@ router.get(
 router.post(
   "/",
   requiredAuth,
-  roleAccess(["Admin", "Manager"]),
+  roleAccess(["Admin"]),
   validateResource(createUserValidation),
   async (req: Request<{}, {}, CreateUserInput["body"]>, res) => {
     const { email, password, role, ...other } = req.body;
@@ -102,19 +102,14 @@ router.post(
   }
 );
 
-router.get(
-  "/",
-  requiredAuth,
-  roleAccess(["Admin", "Manager"]),
-  async (req, res) => {
-    const users = await prisma.user.findMany();
-    return res.send(
-      users.map((u) => {
-        const { password, ...userNoPass } = u;
-        return { ...userNoPass };
-      })
-    );
-  }
-);
+router.get("/", requiredAuth, roleAccess(["Admin"]), async (req, res) => {
+  const users = await prisma.user.findMany();
+  return res.send(
+    users.map((u) => {
+      const { password, ...userNoPass } = u;
+      return { ...userNoPass };
+    })
+  );
+});
 
 export default router;

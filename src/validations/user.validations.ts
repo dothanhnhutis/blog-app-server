@@ -21,17 +21,10 @@ const userBody = z.object({
       invalid_type_error: "token field must be string",
     })
     .email("Invalid email"),
-  password: z
-    .string({
-      required_error: "password field is required",
-      invalid_type_error: "password field must be string",
-    })
-    .min(8, "password field is too short")
-    .max(40, "password field can not be longer than 40 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]*$/,
-      "password field must include: letters, numbers and special characters"
-    ),
+  password: z.string({
+    required_error: "password field is required",
+    invalid_type_error: "password field must be string",
+  }),
   role: roleZod,
   isActive: z.boolean({
     required_error: "isActive field is required",
@@ -73,7 +66,8 @@ export const createUserValidation = z.object({
       email: true,
       password: true,
       username: true,
-      roleId: true,
+      role: true,
+      isActive: true,
     })
     .strict(),
 });
