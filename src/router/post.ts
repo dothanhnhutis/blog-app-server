@@ -88,14 +88,58 @@ router.post(
   }
 );
 
-router.get(
-  "/*",
-  async (req: Request<{}, {}, {}, QueryPostInput["query"]>, res) => {
-    const { authorName, title, tagName, slug } = req.query;
+router.get("/:slug", async (req: Request<{ slug: string }>, res) => {
+  const { slug } = req.params;
+  const post = await prisma.post.findUnique({
+    where: {
+      slug,
+    },
+    include: {
+      author: {
+        select: {
+          username: true,
+          avatarUrl: true,
+        },
+      },
+      tag: {
+        select: {
+          slug: true,
+          tagName: true,
+        },
+      },
+    },
+  });
+  return res.send(post);
+});
 
-    return res.send({
-      query: req.query,
-    });
-  }
-);
+router.get("/", async (req, res) => {
+  const posts = await prisma.post.findMany({
+    include: {
+      author: {
+        select: {
+          username: true,
+          avatarUrl: true,
+        },
+      },
+      tag: {
+        select: {
+          slug: true,
+          tagName: true,
+        },
+      },
+    },
+  });
+  return res.send(posts);
+});
+
+// router.get(
+//   "/*",
+//   async (req: Request<{}, {}, {}, QueryPostInput["query"]>, res) => {
+//     const { authorName, title, tagName, slug } = req.query;
+
+//     return res.send({
+//       query: req.query,
+//     });
+//   }
+// );
 export default router;

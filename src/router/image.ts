@@ -39,7 +39,7 @@ route.post(
       tags: ["avatar"],
     };
     const { public_id, asset_id, width, height, secure_url, tags } =
-      await cloudinary.uploader.upload(req.body.data, options);
+      await cloudinary.uploader.upload_large(req.body.data, options);
     const data = await prisma.image.create({
       data: {
         id: asset_id,
